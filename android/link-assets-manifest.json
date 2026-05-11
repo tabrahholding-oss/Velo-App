@@ -1,0 +1,53 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "assets/fonts/Gotham-Black.otf",
+      "sha1": "54fdb121b8cd65336001ab7bbe02df18c5d911c7"
+    },
+    {
+      "path": "assets/fonts/Gotham-Book.otf",
+      "sha1": "844f136b0a3f3edfe0de466db3ebe3fabd9bff85"
+    },
+    {
+      "path": "assets/fonts/Gotham-Light.otf",
+      "sha1": "6dbbd440f45d81e1145d16d2b39aea41e93a5e20"
+    },
+    {
+      "path": "assets/fonts/Gotham-Medium.otf",
+      "sha1": "85f49464303dd4701110a719822462dc6182adf9"
+    },
+    {
+      "path": "assets/fonts/SF-Pro-Display-Light.ttf",
+      "sha1": "db2fde23e1cfb1c9fab6091ce0d508e77c3f3a7e"
+    },
+    {
+      "path": "assets/fonts/SF-Pro-Text-Light.ttf",
+      "sha1": "2598837d0da90b71704242c5ca507bab3499708e"
+    },
+    {
+      "path": "assets/fonts/SF-Pro-Text-Semibold.ttf",
+      "sha1": "9e5beb8ecaeb237984db937dde585614abc95caf"
+    },
+    {
+      "path": "assets/fonts/SFProDisplay-Medium.ttf",
+      "sha1": "063378dbd1b8b0b03263d86714a455ae11afb743"
+    },
+    {
+      "path": "assets/fonts/SFProDisplay-Semibold.ttf",
+      "sha1": "9dd7c8e0a103ff7d074b046272a87e4a0565e6b2"
+    },
+    {
+      "path": "assets/fonts/SFProText-Bold.ttf",
+      "sha1": "632e6cea171b276e5dd1f13b152c702fbf562cee"
+    },
+    {
+      "path": "assets/fonts/SFProText-Medium.ttf",
+      "sha1": "3b8df618cd23e83843b16a8a32de1ddc9de44df4"
+    },
+    {
+      "path": "assets/fonts/SFProText-Regular.ttf",
+      "sha1": "b4893462f2289df6978f9462a63db9e64bcc9342"
+    }
+  ]
+}
