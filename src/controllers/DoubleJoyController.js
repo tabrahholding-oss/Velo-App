@@ -117,7 +117,7 @@ export class DoubleJoyController {
 
     const newdata = new FormData();
     newdata.append('cart_id', cart_id);
-    newdata.append('type', type);
+   
     if (note || note?.length) {
       newdata.append('note', note);
     }
@@ -129,7 +129,15 @@ export class DoubleJoyController {
       redirect: 'follow',
     };
 
-    return fetch(API_BASE + '/order/checkout', requestOptions)
+    let url = API_BASE + '/order/checkout';
+    if(type === 'Debit'){
+      url = API_BASE + '/order/checkout/skipcash';
+    }
+    else{
+      newdata.append('type', type);
+    }
+
+    return fetch(url, requestOptions)
       .then(response => response.text())
       .then(result => {
         return JSON.parse(result);

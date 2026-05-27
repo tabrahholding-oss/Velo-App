@@ -94,7 +94,7 @@ const WalletPay = props => {
 
   const payNow = val => {
     if (val === 'debit') {
-      completePaymentDebit('VISA');
+      completePaymentDebit('Debit');
     } else if (val === 'apple') {
       completePaymentDebit('ApplePay');
     } else if (val === 'gpay') {
@@ -189,16 +189,13 @@ const WalletPay = props => {
           <CurvedGreyButton
             label={
               <>
-                <Image
-                  source={assets.visamaster}
-                  style={{height: 24, width: 85}}
-                />
+                <Image source={assets.visamaster} style={{height:24,width:80}} />
               </>
             }
             style={{marginTop: 15, borderRadius: 12, paddingBottom: 0}}
             onPress={() => payNow('debit')}
           />
-          <CurvedGreyButton
+          {/* <CurvedGreyButton
             label={
               <>
                 <Image source={assets.naps} style={{height: 22, width: 55}} />
@@ -206,7 +203,7 @@ const WalletPay = props => {
             }
             style={{marginTop: 15, borderRadius: 12}}
             onPress={() => payNow('naps')}
-          />
+          /> */}
         </View>
       </View>
 

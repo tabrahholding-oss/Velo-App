@@ -6,7 +6,8 @@
 // export const API_LAYOUT = 'https://velo.craftandcode.in/';
 
 
-export const API_BASE = 'https://api.veloqa.com/api';   
+// export const API_BASE = 'https://api.veloqa.com/api';   
+export const API_BASE = 'http://15.206.178.43/api';
 export const API_SUCCESS = 'https://api.veloqa.com';
 export const API_LAYOUT = 'https://app.veloqa.com/';
 

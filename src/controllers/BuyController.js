@@ -90,10 +90,22 @@ export class BuyContoller {
     myHeaders.append('Authorization', 'Bearer ' + token);
 
     var formdata = new FormData();
-    formdata.append('type', type);
+    
     formdata.append('amount', data.attributes.amount);
     // formdata.append('PaymentMethodId', '2');
     formdata.append('package_id', data.id);
+
+  
+
+    let url = API_BASE + '/packages/purchase';
+    if(type === 'Package'){
+      url = API_BASE + '/packages/purchase/skipcash';
+      // formdata.append('type', 'skipcash');
+    }
+    else{
+      formdata.append('type', type);
+    }
+
 
     var requestOptions = {
       method: 'POST',
@@ -102,7 +114,9 @@ export class BuyContoller {
       redirect: 'follow',
     };
 
-    return fetch(API_BASE + '/packages/purchase', requestOptions)
+    console.log(url, requestOptions,'url, requestOptions')
+
+    return fetch(url, requestOptions)
       .then(response => response.text())
       .then(result => {
         console.log(result)

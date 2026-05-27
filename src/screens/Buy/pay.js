@@ -120,6 +120,7 @@ const Pay = props => {
       PayFromWallet();
     } else if (val === 'debit') {
       completePaymentDebit('Package');
+      // completePaymentDebit('Package');
     } else if (val === 'apple') {
       completePaymentDebit('ApplePay');
     } else if (val === 'gpay') {
@@ -283,18 +284,18 @@ const Pay = props => {
             style={{marginTop: 15, borderRadius: 12}}
             onPress={() => payNow('debit')}
           />
-           <CurvedGreyButton
+           {/* <CurvedGreyButton
             label={
-              <>
+              <> */}
                 {/* <Text style={{fontSize: 16, width: '100%'}}>
                  QATAR DEBIT CARD
                 </Text> */}
-                <Image source={assets.naps} style={{height:22,width:60}} />
-              </>
+                {/* <Image source={assets.naps} style={{height:22,width:60}} /> */}
+              {/* </>
             }
             style={{marginTop: 15, borderRadius: 12}}
             onPress={() => payNow('naps')}
-          />
+          /> */}
         </View>
       </View>
 

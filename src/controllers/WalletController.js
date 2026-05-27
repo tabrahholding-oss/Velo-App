@@ -27,7 +27,7 @@ export class WalletController {
     myHeaders.append('Authorization', 'Bearer ' + token);
 
     var formdata = new FormData();
-    formdata.append('type', type);
+   
     formdata.append('amount', amount);
 
     var requestOptions = {
@@ -37,7 +37,17 @@ export class WalletController {
       redirect: 'follow',
     };
 
-    return fetch(API_BASE + '/wallet/recharge', requestOptions)
+    let url = API_BASE + '/wallet/recharge';
+    if(type === 'Debit'){
+      url = API_BASE + '/wallet/recharge/skipcash';
+
+    }
+    else{
+      formdata.append('type', type);
+    }
+    console.log(url, requestOptions,'url, requestOptions')
+
+    return fetch(url, requestOptions)
       .then(response => response.text())
       .then(result => {
         return JSON.parse(result);
