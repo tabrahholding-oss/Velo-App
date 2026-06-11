@@ -97,7 +97,6 @@ function LogoTitle() {
   return (
     <View
       style={{
-        width: Platform.OS === 'android' ? width - 105 : width - 155,
         justifyContent: 'center',
         alignItems: 'center',
       }}>
