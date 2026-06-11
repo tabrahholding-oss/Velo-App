@@ -86,9 +86,11 @@ const DoubleJoypay = props => {
       PayFromWallet();
     } else if (val === 'debit') {
       completePaymentDebit('Debit');
-    } else if (val === 'apple') {
-      completePaymentDebit('ApplePay');
-    } else if (val === 'gpay') {
+    } 
+    // else if (val === 'apple') {
+    //   completePaymentDebit('ApplePay');
+    // } 
+    else if (val === 'gpay') {
       completePaymentDebit('Gpay');
     }
     else if (val === 'naps') {
@@ -178,7 +180,7 @@ const DoubleJoypay = props => {
             alignSelf: 'center',
             paddingBottom: 20,
           }}>
-          {Platform.OS === 'ios' && (
+          {/* {Platform.OS === 'ios' && (
             <CurvedGreyButton
               label={
                 <>
@@ -192,7 +194,7 @@ const DoubleJoypay = props => {
               style={{marginTop: 15, borderRadius: 12}}
               onPress={() => payNow('apple')}
             />
-          )}
+          )} */}
 
           <CurvedGreyButton
             label={

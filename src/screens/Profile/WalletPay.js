@@ -95,9 +95,11 @@ const WalletPay = props => {
   const payNow = val => {
     if (val === 'debit') {
       completePaymentDebit('Debit');
-    } else if (val === 'apple') {
-      completePaymentDebit('ApplePay');
-    } else if (val === 'gpay') {
+    } 
+    // else if (val === 'apple') {
+    //   completePaymentDebit('ApplePay');
+    // } 
+    else if (val === 'gpay') {
       completePaymentDebit('Gpay');
     } else if (val === 'naps') {
       completePaymentDebit('Naps');
@@ -159,7 +161,7 @@ const WalletPay = props => {
             alignSelf: 'center',
             paddingBottom: 20,
           }}>
-          {Platform.OS === 'ios' && (
+          {/* {Platform.OS === 'ios' && (
             <CurvedGreyButton
               label={
                 <>
@@ -173,7 +175,7 @@ const WalletPay = props => {
               style={{marginTop: 15, borderRadius: 12}}
               onPress={() => payNow('apple')}
             />
-          )}
+          )} */}
 
           <CurvedGreyButton
             label={
