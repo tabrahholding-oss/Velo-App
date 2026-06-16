@@ -12,6 +12,7 @@ import {
 import {assets} from '../config/AssetsConfig';
 import ChangePassword from '../screens/Profile/ChangePassword';
 import MyWallet from '../screens/Profile/MyWallet';
+import TransactionHistory from '../screens/Profile/TransactionHistory';
 import Journey from '../screens/Journey';
 import Buy from '../screens/Buy';
 import WalletPay from '../screens/Profile/WalletPay';
@@ -104,6 +105,18 @@ const ProfileNavigation = ({navigation}) => {
       <Stack.Screen
         name="MyWallet"
         component={MyWallet}
+        options={{
+          headerStyle: {
+            borderBottomWidth: 1,
+            borderColor: '#000',
+          },
+          headerLeft: () => <BackIcon />,
+          headerTitle: props => <LogoTitle {...props} />,
+        }}
+      />
+      <Stack.Screen
+        name="TransactionHistory"
+        component={TransactionHistory}
         options={{
           headerStyle: {
             borderBottomWidth: 1,

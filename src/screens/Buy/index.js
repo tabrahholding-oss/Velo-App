@@ -70,7 +70,7 @@ const Buy = props => {
     const token = await getToken();
     const instance = new BuyContoller();
     const result = await instance.getAllPackages(token);
-
+    console.log(result, 'packages');
     if (result?.data?.length) {
       setData(result.data);
       setLoading(false);

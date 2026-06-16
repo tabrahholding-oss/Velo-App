@@ -98,7 +98,8 @@ const Pay = props => {
   const [webViewMode, setWebViewMode] = useState(null);
   const [webViewUrl, setWebViewUrl] = useState("");
   const [webViewToken, setWebViewToken] = useState("");
-  const isDarkMode = useColorScheme() === "dark";
+  const [transactionId, setTransactionId] = useState("");
+
 
   const formatPayAmount = value => {
     const parsed = Number(value);
@@ -315,19 +316,6 @@ const Pay = props => {
     }
   }, [webViewMode]);
 
-  // useEffect(() => {
-  //   if (!startTimer) return;
-
-  //   timerRef.current = setInterval(() => {
-  //     setTimer((prev) => {
-  //       const next = prev + 1;
-  //       if (next % 5 === 0) handleStatus();
-  //       return next;
-  //     });
-  //   }, 1000);
-  //   return () => clearInterval(timerRef.current);
-  // }, [startTimer]);
-
   const handleStatus = async () => {
     try {
       const response = await fetch(
@@ -352,10 +340,6 @@ const Pay = props => {
       setIsLoading(false);
       Alert.alert('Payment Failed');
     }
-  };
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? "#121212" : "#F3F3F3",
   };
 
   const buildGooglePayRequest = payAmount => ({
@@ -427,7 +411,7 @@ const Pay = props => {
             const cardNetwork = response.paymentMethodData.info.cardNetwork;
             console.log('Card network', cardNetwork);
             console.log('Payment token', paymentToken);
-            await handlePaySetup(paymentToken, cardNetwork);
+            await handleGPPreparePayment(paymentToken, cardNetwork);
           })
           .catch(err => {
             console.log('Error calling show()', err?.message || err);
@@ -448,6 +432,28 @@ const Pay = props => {
     });
   };
 
+  const handleGPPreparePayment = async (paymentToken, cardNetwork) => {
+    paymentTokenRef.current = paymentToken;
+    cardNetworkRef.current = cardNetwork;
+    let packageId = item.id;
+    try {
+      const token = await getToken();
+      const response = await fetch(`${API_BASE}/skipcash/gp/package/prepare`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+        body: JSON.stringify({ package_id: packageId }),
+      });
+      const json = await response.json();
+      console.log("handleGPPreparePayment response -> ", json);
+      if (json?.transaction_id) {
+        setTransactionId(json?.transaction_id);
+        handlePaySetup(paymentToken, cardNetwork);
+      }
+    } catch (error) {
+      console.log('Error calling /preparePayment', error);
+      setIsLoading(false);
+    }
+  };
   
   const handlePaySetup = async (paymentToken, cardNetwork) => {
     paymentTokenRef.current = paymentToken;
@@ -458,6 +464,7 @@ const Pay = props => {
         paymentToken,
         cardNetwork,
         userAgent: Platform.OS + "/" + Platform.Version,
+        transactionId: transactionId
       };
       console.log("handlePaySetup body -> ", body);
       setIsLoading(true);
@@ -530,37 +537,6 @@ const Pay = props => {
       });
   };
 
-  
-  const handleValidate = async () => {
-    try {
-      const response = await fetch(`${API_BASE}/skipcash/gp/validate`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "User-Agent": Platform.OS + "/" + Platform.Version,
-        },
-        body: JSON.stringify({
-          paymentId: paymentIdRef.current,
-          paymentToken: paymentTokenRef.current,
-          cardNetwork: cardNetworkRef.current,
-          deviceData: deviceDataRef.current,
-        }),
-      });
-      const json = await response.json();
-      console.log('handleValidate response -> ', json);
-      if (json?.resultObj?.isFinished && json?.resultObj?.statusId === 2) {
-        showGooglePaySuccess();
-      } else {
-        setIsLoading(false);
-        Alert.alert('Payment Failed -> ' + json?.resultObj?.visaId);
-      }
-    } catch (err) {
-      console.log('Error calling /validate', err);
-      setIsLoading(false);
-      Alert.alert('Payment Failed');
-    }
-  };
-
   const handleMessage = (event) => {
     try {
       console.log("handleMessage raw ->", event.nativeEvent.data);
@@ -600,7 +576,6 @@ const Pay = props => {
       console.log("handleMessage error:", error);
     }
   };
-
 
   const parseApiJson = async (response, label) => {
     const text = await response.text();

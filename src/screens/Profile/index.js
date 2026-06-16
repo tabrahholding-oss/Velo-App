@@ -103,6 +103,11 @@ const Profile = ({navigation}) => {
           screen:'journey'})}
           />
           <GreyBox
+            label="Transaction History"
+            textStyle={{textAlign: 'center'}}
+            onPress={() => navigation.navigate('TransactionHistory')}
+          />
+          <GreyBox
             label="Delete my account"
             textStyle={{textAlign: 'center'}}
             onPress={() => deleteAccount()}
