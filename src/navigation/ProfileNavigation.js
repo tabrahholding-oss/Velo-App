@@ -47,14 +47,13 @@ const ProfileNavigation = ({navigation}) => {
   function LogoTitle() {
     return (
       <View
-        style={{
-          // width:width - 105,
-          width: Platform.OS === 'android' ? width - 105 : width - 138,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}>
-        <Image source={assets.logo} style={{width: 60, height: 24}} />
-      </View>
+      style={{
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: Platform.OS === 'android' ? width - 78 : width - 78,
+      }}>
+      <Image source={assets.logo} style={{width: 60, height: 24}} />
+    </View>
     );
   }
   return (

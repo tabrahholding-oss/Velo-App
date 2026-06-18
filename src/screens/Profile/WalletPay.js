@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import {CurvedGreyButton} from '../../components/Buttons';
 import {
   View,
@@ -10,6 +10,7 @@ import {
   StyleSheet,
   Platform,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import {assets} from '../../config/AssetsConfig';
 import {UserContext} from '../../../context/UserContext';
@@ -19,7 +20,7 @@ import PageLoader from '../../components/PageLoader';
 import WebView from 'react-native-webview';
 import {Modal} from 'react-native-paper';
 import {ProfileController} from '../../controllers/ProfileController';
-import {API_SUCCESS} from '../../config/ApiConfig';
+import {API_BASE, API_SUCCESS} from '../../config/ApiConfig';
 import {useNavigation} from '@react-navigation/native';
 import {WalletController} from '../../controllers/WalletController';
 
@@ -135,13 +136,8 @@ const WalletPay = props => {
     setPaymentSuccessModal(true);
     setTimeout(() => {
       setPaymentSuccessModal(false);
-      toast.show('Package purchased successfully');
-      navigation.navigate('Home', {
-        screen: 'Buy',
-        params: {
-          purchase: 'success',
-        },
-      });
+      toast.show('Wallet recharged successfully');
+      navigation.navigate('MyWallet');
     }, 2000);
   };
 
@@ -214,16 +210,6 @@ const WalletPay = props => {
     }
   };
 
-  
-  useEffect(() => {
-    if (webViewMode === "challenge") {
-      setTimer(0);
-      setStartTimer(true);
-    } else {
-      setStartTimer(false);
-    }
-  }, [webViewMode]);
-
   const handleStatus = async () => {
     try {
       const response = await fetch(
@@ -236,7 +222,6 @@ const WalletPay = props => {
       const json = await response.json();
       console.log('handleStatus response -> ', json);
       if (json?.resultObj?.isFinished === true && json?.resultObj?.statusId === 2) {
-        setStartTimer(false);
         setWebViewMode(null);
         showGooglePaySuccess();
       } else {
@@ -249,7 +234,6 @@ const WalletPay = props => {
       Alert.alert('Payment Failed');
     }
   };
-
   const buildGooglePayRequest = payAmount => ({
     apiVersion: 2,
     apiVersionMinor: 0,
@@ -289,7 +273,7 @@ const WalletPay = props => {
   });
 
   const checkCanMakePayment = () => {
-    const payAmount = formatPayAmount(item?.attributes?.amount);
+    const payAmount = amount;
     if (!payAmount) {
       toast.show('Invalid payment amount');
       return;
@@ -343,7 +327,6 @@ const WalletPay = props => {
   const handleGPPreparePayment = async (paymentToken, cardNetwork) => {
     paymentTokenRef.current = paymentToken;
     cardNetworkRef.current = cardNetwork;
-    let packageId = item.id;
     try {
       const token = await getToken();
       const response = await fetch(`${API_BASE}/skipcash/gp/wallet/prepare`, {
@@ -355,7 +338,7 @@ const WalletPay = props => {
       console.log("handleGPPreparePayment response -> ", json);
       if (json?.transaction_id) {
         setTransactionId(json?.transaction_id);
-        handlePaySetup(paymentToken, cardNetwork);
+        handlePaySetup(paymentToken, cardNetwork, json?.transaction_id);
       }
     } catch (error) {
       console.log('Error calling /preparePayment', error);
@@ -363,7 +346,7 @@ const WalletPay = props => {
     }
   };
   
-  const handlePaySetup = async (paymentToken, cardNetwork) => {
+  const handlePaySetup = async (paymentToken, cardNetwork, transaction_id) => {
     paymentTokenRef.current = paymentToken;
     cardNetworkRef.current = cardNetwork;
     try {
@@ -372,7 +355,7 @@ const WalletPay = props => {
         paymentToken,
         cardNetwork,
         userAgent: Platform.OS + "/" + Platform.Version,
-        transactionId: transactionId
+        transactionId: transaction_id
       };
       console.log("handlePaySetup body -> ", body);
       setIsLoading(true);
@@ -504,7 +487,7 @@ const WalletPay = props => {
   const handlePay = async() => {
   const accessToken =  webViewToken;
 
-    const payAmount = item?.attributes?.amount;
+    const payAmount = amount;
   
 
     try {
@@ -560,6 +543,17 @@ const WalletPay = props => {
   return (
     <>
       <PageLoader loading={loading} />
+
+      {isLoading && (
+        <View style={styles.gpayProcessingOverlay}>
+          <View style={styles.gpayProcessingBox}>
+            <ActivityIndicator size="large" color="#161415" />
+            <Text style={styles.gpayProcessingText}>
+              Your payment is processing
+            </Text>
+          </View>
+        </View>
+      )}
 
       <View style={{marginTop: Platform.OS === 'android' ? 10 : 70}}>
         <View
@@ -639,7 +633,7 @@ const WalletPay = props => {
           <CurvedGreyButton
             label={
               <>
-                <Image source={assets.visamaster} style={{height:24,width:80}} />
+                <Image source={assets.visamaster} style={{height:24,width:120}} resizeMode="contain" />
               </>
             }
             style={{marginTop: 15, borderRadius: 12, paddingBottom: 0}}
@@ -714,6 +708,19 @@ const WalletPay = props => {
         </View>
       )}
 
+      {/* Payment Success Modal */}
+      <Modal
+        visible={paymentSuccessModal}
+        dismissable={false}
+        contentContainerStyle={styles.successModalContainer}>
+        <View style={styles.successModalBox}>
+          <Text style={styles.successModalTitle}>Payment Successful</Text>
+          <Text style={styles.successModalMessage}>
+            Wallet recharged successfully
+          </Text>
+        </View>
+      </Modal>
+
       <Modal
         visible={paymentModal}
         onDismiss={() => setPaymentModal(false)}
@@ -778,5 +785,54 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 14,
     borderTopRightRadius: 14,
     marginTop: 0,
+  },
+  gpayProcessingOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    height,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    zIndex: 1000,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  gpayProcessingBox: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    paddingVertical: 28,
+    paddingHorizontal: 32,
+    alignItems: 'center',
+    minWidth: width * 0.7,
+  },
+  gpayProcessingText: {
+    marginTop: 16,
+    fontSize: 15,
+    color: '#161415',
+    fontFamily: 'Gotham-Medium',
+    textAlign: 'center',
+  },
+  successModalContainer: {
+    marginHorizontal: 32,
+  },
+  successModalBox: {
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    paddingVertical: 32,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+  },
+  successModalTitle: {
+    fontSize: 18,
+    color: '#161415',
+    fontFamily: 'Gotham-Medium',
+    marginBottom: 10,
+  },
+  successModalMessage: {
+    fontSize: 14,
+    color: '#161415',
+    fontFamily: 'Gotham-Light',
+    textAlign: 'center',
   },
 });

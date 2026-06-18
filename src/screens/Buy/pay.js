@@ -447,7 +447,7 @@ const Pay = props => {
       console.log("handleGPPreparePayment response -> ", json);
       if (json?.transaction_id) {
         setTransactionId(json?.transaction_id);
-        handlePaySetup(paymentToken, cardNetwork);
+        handlePaySetup(paymentToken, cardNetwork, json?.transaction_id);
       }
     } catch (error) {
       console.log('Error calling /preparePayment', error);
@@ -455,7 +455,7 @@ const Pay = props => {
     }
   };
   
-  const handlePaySetup = async (paymentToken, cardNetwork) => {
+  const handlePaySetup = async (paymentToken, cardNetwork, transaction_id) => {
     paymentTokenRef.current = paymentToken;
     cardNetworkRef.current = cardNetwork;
     try {
@@ -464,7 +464,7 @@ const Pay = props => {
         paymentToken,
         cardNetwork,
         userAgent: Platform.OS + "/" + Platform.Version,
-        transactionId: transactionId
+        transactionId: transaction_id
       };
       console.log("handlePaySetup body -> ", body);
       setIsLoading(true);
@@ -663,17 +663,7 @@ const Pay = props => {
         </View>
       )}
 
-      <Modal
-        visible={paymentSuccessModal}
-        dismissable={false}
-        contentContainerStyle={styles.successModalContainer}>
-        <View style={styles.successModalBox}>
-          <Text style={styles.successModalTitle}>Payment Successful</Text>
-          <Text style={styles.successModalMessage}>
-            Package purchased successfully
-          </Text>
-        </View>
-      </Modal>
+     
 
       <View style={{marginTop: Platform.OS === 'android' ? 10 : 70}}>
         <View
@@ -759,7 +749,7 @@ const Pay = props => {
                 {/* <Text style={{fontSize: 16, width: '100%'}}>
                  VISA MASTER
                 </Text> */}
-                <Image source={assets.visamaster} style={{height:24,width:80}} />
+                <Image source={assets.visamaster} style={{height:24,width:120}} resizeMode="contain" />
               </>
             }
             style={{marginTop: 15, borderRadius: 12}}
@@ -779,6 +769,18 @@ const Pay = props => {
           /> */}
         </View>
       </View>
+
+      <Modal
+        visible={paymentSuccessModal}
+        dismissable={false}
+        contentContainerStyle={styles.successModalContainer}>
+        <View style={styles.successModalBox}>
+          <Text style={styles.successModalTitle}>Payment Successful</Text>
+          <Text style={styles.successModalMessage}>
+            Package purchased successfully
+          </Text>
+        </View>
+      </Modal>
 
         {/* Full-screen challenge WebView — rendered in a Modal so it overlays everything */}
         <Modal

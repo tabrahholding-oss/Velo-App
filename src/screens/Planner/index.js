@@ -28,6 +28,46 @@ import Calendar from '../../components/calendar/Calendar';
 import Calendar2 from '../../components/calendar/Calendar2';
 import {useNavigation} from '@react-navigation/native';
 
+const isWithinThreeHourWindow = item => {
+  if (!item?.attributes) {
+    return false;
+  }
+
+  const attrs = item.attributes;
+  let classStart;
+
+  if (attrs.booked_date && attrs.timing) {
+    classStart = moment(
+      `${attrs.booked_date} ${attrs.timing}`,
+      [
+        'DD MMM YYYY hh:mm A',
+        'DD MMM YYYY h:mm A',
+        'DD MMM YYYY HH:mm',
+        'DD MMM YYYY H:mm',
+        'YYYY-MM-DD HH:mm',
+        'YYYY-MM-DD H:mm',
+        moment.ISO_8601,
+      ],
+      true,
+    );
+  }
+
+  if (!classStart?.isValid() && attrs.booked_date_standard && attrs.booking_time) {
+    classStart = moment(
+      `${attrs.booked_date_standard} ${attrs.booking_time}`,
+      ['YYYY-MM-DD HH:mm', 'YYYY-MM-DD H:mm', 'YYYY-MM-DD HH:mm:ss'],
+      true,
+    );
+  }
+
+  if (!classStart?.isValid()) {
+    return false;
+  }
+
+  const hoursUntilClass = classStart.diff(moment(), 'hours', true);
+  return hoursUntilClass >= 0 && hoursUntilClass <= 3;
+};
+
 const Planner = () => {
   const [classes, setClasses] = useState([
     {name: 'CYCLE', data: [{}, {}, {}]},
@@ -39,7 +79,7 @@ const Planner = () => {
   const [loading, setLoading] = useState(false);
   const [loading2, setLoading2] = useState(false);
   const {getToken} = useContext(UserContext);
-  const [cancelId, setCancelId] = useState();
+  const [cancelBooking, setCancelBooking] = useState(null);
   const [cancelModal, setCancelModal] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [allData, setAllData] = useState([]);
@@ -132,15 +172,19 @@ const Planner = () => {
 
   const toast = useToast();
 
-  const cancelModalOpen = id => {
-    setCancelId(id);
+  const cancelModalOpen = item => {
+    setCancelBooking(item);
     setCancelModal(true);
   };
 
-  const cancelBooking = async () => {
+  const cancelBookingRequest = async () => {
+    if (!cancelBooking?.id) {
+      return;
+    }
+
     setLoading2(true);
     const dt = {
-      booking_id: cancelId,
+      booking_id: cancelBooking.id,
     };
     const token = await getToken();
     const instance = new ClassContoller();
@@ -149,6 +193,7 @@ const Planner = () => {
       toast.show(result.msg);
       setLoading2(false);
       setCancelModal(false);
+      setCancelBooking(null);
       setRefresh(!refresh);
     } else {
       toast.show(result.msg);
@@ -275,7 +320,10 @@ const Planner = () => {
       <ModalView
         visible={cancelModal}
         heading="CANCEL BOOKING"
-        setVisible={() => setCancelModal(false)}
+        setVisible={() => {
+          setCancelModal(false);
+          setCancelBooking(null);
+        }}
         style={{
           height: 'auto',
           marginTop: 260,
@@ -285,8 +333,19 @@ const Planner = () => {
         <View style={styles.summeryBox}>
           <View style={styles.modalTotalBox}>
             <Text style={{fontSize: 14, textAlign: 'center'}}>
-              Are you sure you want to cancel your booking?
+            Are you sure you want to cancel? 
             </Text>
+            {isWithinThreeHourWindow(cancelBooking) ? (
+              <Text
+                style={{
+                  fontSize: 12,
+                  textAlign: 'center',
+                  marginTop: 8,
+                  color: '#c0392b',
+                }}>
+                You are within the 3 hour window and will lose your credit.
+              </Text>
+            ) : null}
           </View>
 
           <View
@@ -305,7 +364,7 @@ const Planner = () => {
             />
             <RoundedGreyButton
               label={'YES'}
-              onPress={() => cancelBooking()}
+              onPress={() => cancelBookingRequest()}
               style={{width: 100, marginLeft: 5, marginTop: 5}}
             />
           </View>

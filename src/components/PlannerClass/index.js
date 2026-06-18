@@ -114,7 +114,7 @@ export const PlannerClass = props => {
           )}
           <Badge
             style={[styles.bedge, {backgroundColor: 'red'}]}
-            onPress={() => props.cancelModalOpen(item.id)}>
+            onPress={() => props.cancelModalOpen(item)}>
             {item.attributes.waiting_no ? 'Leave Waitlist' : 'Cancel Booking'}
           </Badge>
         </View>
