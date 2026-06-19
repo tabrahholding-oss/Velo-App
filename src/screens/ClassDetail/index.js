@@ -31,6 +31,31 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
 
+const isWithinThreeHourWindow = (classItem, routeItem) => {
+  const attrs = classItem?.attributes || {};
+  const dateStandard =
+    attrs.booked_date_standard || routeItem?.start_date || classItem?.start_date;
+  const bookingTime =
+    attrs.booking_time || routeItem?.start_time || classItem?.start_time;
+
+  if (!dateStandard || !bookingTime) {
+    return false;
+  }
+
+  const classStart = moment(
+    `${dateStandard} ${bookingTime}`,
+    ['YYYY-MM-DD HH:mm', 'YYYY-MM-DD H:mm', 'YYYY-MM-DD HH:mm:ss'],
+    true,
+  );
+
+  if (!classStart?.isValid()) {
+    return false;
+  }
+
+  const hoursUntilClass = classStart.diff(moment(), 'hours', true);
+  return hoursUntilClass >= 0 && hoursUntilClass <= 3;
+};
+
 const ClassDetail = props => {
   console.log('props in class Detail   ' , props)
   const [open, setOpen] = useState(true);
@@ -530,9 +555,22 @@ const ClassDetail = props => {
         }}>
         <View style={styles.summeryBox}>
           <View style={styles.modalTotalBox}>
-            <Text style={{fontSize: 14, textAlign: 'center'}}>
-              Are you sure you want to cancel your booking?
+            <View>
+            <Text style={{fontSize: 14, marginLeft: 0}}>
+              Are you sure you want to cancel?
             </Text>
+            {isWithinThreeHourWindow(item, props.route.params?.item) ? (
+              <Text
+                style={{
+                  fontSize: 12,
+                  marginLeft: 0,
+                  marginTop: 8,
+                  color: '#c0392b',
+                }}>
+                You are within the s3 hour window and will lose your credit.
+              </Text>
+            ) : null}
+            </View>
           </View>
 
           <View
@@ -540,7 +578,9 @@ const ClassDetail = props => {
               display: 'flex',
               flexDirection: 'row',
               justifyContent: 'flex-end',
-              marginTop: 15,
+              marginTop: 25,
+              marginBottom: 20,
+              paddingRight: 20,
             }}>
             <RoundedOutlineButton
               label={'NO'}
