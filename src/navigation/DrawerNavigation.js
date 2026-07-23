@@ -99,7 +99,7 @@ function LogoTitle() {
       style={{
         justifyContent: 'center',
         alignItems: 'center',
-        width: Platform.OS === 'android' ? width - 78 : width - 78,
+        width: Platform.OS === 'android' ? width - 78 : 'auto',
       }}>
       <Image source={assets.logo} style={{width: 60, height: 24}} />
     </View>

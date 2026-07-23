@@ -46,5 +46,27 @@ target 'velo' do
       # :ccache_enabled => true
     )
 
+    # Xcode 26+ / Apple Clang: fmt 11.0.2 consteval breaks iOS builds.
+    # FMT_USE_CONSTEVAL via -D is ignored in fmt 11.0.2 (no #ifdef guard).
+    installer.pods_project.targets.each do |target|
+      next unless target.name == 'fmt'
+
+      target.build_configurations.each do |config|
+        config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'
+      end
+    end
+
+    fmt_base = File.join(installer.sandbox.root, 'fmt', 'include', 'fmt', 'base.h')
+    if File.exist?(fmt_base)
+      content = File.read(fmt_base)
+      patched = content.gsub(
+        /#elif defined\(__cpp_consteval\)\n#  define FMT_USE_CONSTEVAL 1/,
+        "#elif defined(__cpp_consteval)\n#  define FMT_USE_CONSTEVAL 0  // Xcode 26 workaround"
+      )
+      if patched != content
+        File.chmod(0644, fmt_base)
+        File.write(fmt_base, patched)
+      end
+    end
   end
 end

@@ -37,7 +37,7 @@ const requestAndroidStoragePermission = async () => {
   return granted === PermissionsAndroid.RESULTS.GRANTED;
 };
 
-export const fetchInvoicePdf = async (transactionId, token) => {
+const fetchInvoicePdfAndroid = async (transactionId, token) => {
   const url = getInvoiceUrl(transactionId);
 
   const response = await fetch(url, {
@@ -85,6 +85,60 @@ export const fetchInvoicePdf = async (transactionId, token) => {
   };
 };
 
+const fetchInvoicePdfIOS = async (transactionId, token) => {
+  const url = getInvoiceUrl(transactionId);
+  const headers = getInvoiceHeaders(token);
+
+  const response = await ReactNativeBlobUtil.config({
+    fileCache: true,
+    appendExt: 'pdf',
+  }).fetch('GET', url, headers);
+
+  const responseInfo = response.info();
+  console.log('Invoice API response ->', {
+    status: responseInfo.status,
+    headers: responseInfo.headers,
+    url,
+  });
+
+  if (responseInfo.status !== 200) {
+    const errorText = await response.text();
+    throw new Error(
+      errorText?.slice(0, 160) ||
+        `Invoice request failed (${responseInfo.status})`,
+    );
+  }
+
+  const path = response.path();
+  const fileName = getFileNameFromDisposition(
+    responseInfo.headers?.['Content-Disposition'] ||
+      responseInfo.headers?.['content-disposition'],
+    transactionId,
+  );
+  const base64 = await ReactNativeBlobUtil.fs.readFile(path, 'base64');
+
+  console.log('Invoice PDF file ->', {
+    path,
+    fileName,
+    size: base64?.length,
+  });
+
+  return {
+    path,
+    fileName,
+    base64,
+    url,
+  };
+};
+
+export const fetchInvoicePdf = async (transactionId, token) => {
+  if (Platform.OS === 'ios') {
+    return fetchInvoicePdfIOS(transactionId, token);
+  }
+
+  return fetchInvoicePdfAndroid(transactionId, token);
+};
+
 export const getInvoicePreviewHtml = base64 =>
   `<!DOCTYPE html>
 <html>
@@ -100,7 +154,29 @@ export const getInvoicePreviewHtml = base64 =>
   </body>
 </html>`;
 
-export const downloadInvoice = async (
+const downloadInvoiceIOS = async (invoiceFile, {openAfterDownload = true} = {}) => {
+  const {path, fileName} = invoiceFile;
+  const downloadPath = `${ReactNativeBlobUtil.fs.dirs.DocumentDir}/${fileName}`;
+
+  const exists = await ReactNativeBlobUtil.fs.exists(path);
+  if (!exists) {
+    throw new Error('Invoice file not found');
+  }
+
+  if (await ReactNativeBlobUtil.fs.exists(downloadPath)) {
+    await ReactNativeBlobUtil.fs.unlink(downloadPath);
+  }
+
+  await ReactNativeBlobUtil.fs.cp(path, downloadPath);
+
+  if (openAfterDownload) {
+    await viewInvoiceFile(downloadPath);
+  }
+
+  return downloadPath;
+};
+
+const downloadInvoiceAndroid = async (
   invoiceFile,
   {openAfterDownload = true} = {},
 ) => {
@@ -126,19 +202,42 @@ export const downloadInvoice = async (
   return downloadPath;
 };
 
-export const viewInvoiceFile = async filePath => {
-  if (Platform.OS === 'android') {
-    await ReactNativeBlobUtil.android.actionViewIntent(
-      filePath,
-      'application/pdf',
-    );
-  } else {
-    await ReactNativeBlobUtil.ios.openDocument(filePath);
+export const downloadInvoice = async (
+  invoiceFile,
+  {openAfterDownload = true} = {},
+) => {
+  if (Platform.OS === 'ios') {
+    return downloadInvoiceIOS(invoiceFile, {openAfterDownload});
   }
+
+  return downloadInvoiceAndroid(invoiceFile, {openAfterDownload});
 };
 
-export const getInvoiceViewUri = filePath =>
-  Platform.OS === 'android' ? `file://${filePath}` : filePath;
+export const viewInvoiceFile = async filePath => {
+  const normalizedPath = String(filePath || '').replace('file://', '');
+
+  if (!normalizedPath) {
+    throw new Error('Invoice file path is missing');
+  }
+
+  if (Platform.OS === 'android') {
+    await ReactNativeBlobUtil.android.actionViewIntent(
+      normalizedPath,
+      'application/pdf',
+    );
+    return;
+  }
+
+  await ReactNativeBlobUtil.ios.openDocument(normalizedPath);
+};
+
+export const getInvoiceViewUri = filePath => {
+  if (Platform.OS !== 'android') {
+    return null;
+  }
+
+  return `file://${filePath}`;
+};
 
 // Backward-compatible helpers
 export const fetchInvoice = fetchInvoicePdf;

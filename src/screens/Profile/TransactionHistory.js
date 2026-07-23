@@ -91,6 +91,8 @@ const TransactionHistory = ({navigation}) => {
       const current = extractCurrentPage(result);
       const totalPages = extractLastPage(result);
 
+      console.log(list, 'list');
+
       setTransactions(prev => (append ? [...prev, ...list] : list));
       setPage(current || pageNum);
       setLastPage(totalPages || 1);
@@ -162,7 +164,16 @@ const TransactionHistory = ({navigation}) => {
         loading: false,
       });
 
-      await viewInvoiceFile(downloadPath);
+      if (Platform.OS === 'android') {
+        await viewInvoiceFile(downloadPath);
+      } else {
+        try {
+          await viewInvoiceFile(downloadPath);
+        } catch (viewError) {
+          console.log('iOS native invoice preview error', viewError);
+        }
+      }
+
       toast.show('Invoice downloaded successfully');
     } catch (error) {
       console.log('handleDownloadAndViewInvoice error', error);
@@ -313,6 +324,17 @@ const TransactionHistory = ({navigation}) => {
                   Downloading invoice...
                 </Text>
               </View>
+            ) : invoiceModal.invoiceFile?.base64 ? (
+              <WebView
+                source={{
+                  html: getInvoicePreviewHtml(invoiceModal.invoiceFile.base64),
+                }}
+                originWhitelist={['*']}
+                javaScriptEnabled
+                domStorageEnabled
+                startInLoadingState
+                style={styles.invoiceWebView}
+              />
             ) : invoiceModal.invoiceFile?.viewUri ? (
               <WebView
                 source={{uri: invoiceModal.invoiceFile.viewUri}}
@@ -333,17 +355,6 @@ const TransactionHistory = ({navigation}) => {
                     <ActivityIndicator color="#161415" size="large" />
                   </View>
                 )}
-                style={styles.invoiceWebView}
-              />
-            ) : invoiceModal.invoiceFile?.base64 ? (
-              <WebView
-                source={{
-                  html: getInvoicePreviewHtml(invoiceModal.invoiceFile.base64),
-                }}
-                originWhitelist={['*']}
-                javaScriptEnabled
-                domStorageEnabled
-                startInLoadingState
                 style={styles.invoiceWebView}
               />
             ) : null}

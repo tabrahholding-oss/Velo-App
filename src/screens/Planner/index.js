@@ -36,21 +36,15 @@ const isWithinThreeHourWindow = item => {
   const attrs = item.attributes;
   let classStart;
 
-  if (attrs.booked_date && attrs.timing) {
+  if (attrs.booked_date_standard && attrs.booking_time) {
     classStart = moment(
-      `${attrs.booked_date} ${attrs.timing}`,
-      [
-        'DD MMM YYYY hh:mm A',
-        'DD MMM YYYY h:mm A',
-        'DD MMM YYYY HH:mm',
-        'DD MMM YYYY H:mm',
-        'YYYY-MM-DD HH:mm',
-        'YYYY-MM-DD H:mm',
-        moment.ISO_8601,
-      ],
+      `${attrs.booked_date_standard} ${attrs.booking_time}`,
+      ['YYYY-MM-DD HH:mm', 'YYYY-MM-DD H:mm', 'YYYY-MM-DD HH:mm:ss'],
       true,
     );
   }
+
+  console.log(!classStart?.isValid() && attrs.booked_date_standard && attrs.booking_time, 'classStart');
 
   if (!classStart?.isValid() && attrs.booked_date_standard && attrs.booking_time) {
     classStart = moment(
@@ -65,6 +59,9 @@ const isWithinThreeHourWindow = item => {
   }
 
   const hoursUntilClass = classStart.diff(moment(), 'hours', true);
+
+  console.log(hoursUntilClass, 'hoursUntilClass');
+  console.log(hoursUntilClass >= 0 && hoursUntilClass <= 3, 'hoursUntilClass >= 0 && hoursUntilClass <= 3');
   return hoursUntilClass >= 0 && hoursUntilClass <= 3;
 };
 
@@ -332,14 +329,14 @@ const Planner = () => {
         }}>
         <View style={styles.summeryBox}>
           <View style={styles.modalTotalBox}>
-            <Text style={{fontSize: 14, textAlign: 'center'}}>
+            <Text style={{fontSize: 14, marginLeft: 20}}>
             Are you sure you want to cancel? 
             </Text>
             {isWithinThreeHourWindow(cancelBooking) ? (
               <Text
                 style={{
                   fontSize: 12,
-                  textAlign: 'center',
+                  marginLeft: 20,
                   marginTop: 8,
                   color: '#c0392b',
                 }}>

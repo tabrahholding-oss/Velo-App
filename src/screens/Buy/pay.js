@@ -86,6 +86,7 @@ true;
 `;
 
 const Pay = props => {
+
   const [loading, setLoading] = useState(false);
   const [item, setItem] = useState();
   const {getToken} = useContext(UserContext);
@@ -100,7 +101,6 @@ const Pay = props => {
   const [webViewToken, setWebViewToken] = useState("");
   const [transactionId, setTransactionId] = useState("");
 
-
   const formatPayAmount = value => {
     const parsed = Number(value);
     if (!Number.isFinite(parsed) || parsed <= 0) return null;
@@ -114,11 +114,20 @@ const Pay = props => {
   const [startTimer, setStartTimer] = useState(false);
   const timerRef = useRef(null);
 
-
   const paymentIdRef = useRef("");
   const paymentTokenRef = useRef("");
   const cardNetworkRef = useRef("");
   const deviceDataRef = useRef("");
+  const paymentHandledRef = useRef(false);
+
+  const getQueryParam = (url, key) => {
+    try {
+      const query = (url || '').split('?')[1]?.split('#')[0] || '';
+      return new URLSearchParams(query).get(key);
+    } catch {
+      return null;
+    }
+  };
 
 
   const toast = useToast();
@@ -160,62 +169,32 @@ const Pay = props => {
   };
 
   const checkResponse = data => {
-    console.log(data.url)
-    if (data.url.includes('status')) {
-      const url1 = data.url.split('?')[1];
-      const url2 = url1.split('&')[0];
-      const status = url2.split('=')[1];
-      console.log(status,'status');
-      if(status === 'Paid'){
-        setLoading(true);
+    const url = data?.url || '';
+    console.log(url, data, '======>>>>>====');
+
+    if (url.includes('status')) {
+        const status = getQueryParam(url, 'status');
         setPaymentModal(false);
+        setPaymentUrl('');
+      console.log(status, 'status');
+
+      if (status === 'Paid') {
+        setLoading(true);
         setTimeout(() => {
           toast.show('Package purchased successfully');
           navigation.navigate('Home', {
-            screen:'Buy',
-            params:{
-              purchase:'success'
-            }
-          })
-          // navigation.navigate('buy', {purchase: 'success'});
+            screen: 'Buy',
+            params: {
+              purchase: 'success',
+            },
+          });
           setLoading(false);
         }, 2000);
-      }
-      else{
-        setPaymentModal(false);
-        setPaymentUrl('');
-        navigation.navigate('buy');
-        toast.show('Payment has been ' + status);
+      } else {
+        navigation.navigate('Home', {screen: 'Buy'});
+        toast.show('Payment has been ' + (status || 'failed'));
       }
     }
-
-
-    // if (data.url.includes('status=Paid')) {
-    //   setLoading(true);
-    //   setPaymentModal(false);
-    //   setTimeout(() => {
-    //     toast.show('Package purchased successfully');
-    //     navigation.navigate('buy', {purchase: 'success'});
-    //     setLoading(false);
-    //   }, 3000);
-    // } 
-    // else if(data.url.includes('status=Canceled')){
-    //   setPaymentModal(false);
-    //   setPaymentUrl('');
-    //   navigation.navigate('buy');
-    //   toast.show('Payment has been failed');
-    // }
-    // else if(data.url.includes('status=Pending')){
-    //   setPaymentModal(false);
-    //   setPaymentUrl('');
-    //   navigation.navigate('buy');
-    //   toast.show('Your payment is in pending');
-    // }
-    // else if (data.url.includes('transaction_cancelled')) {
-    //   setPaymentModal(false);
-    //   navigation.navigate('buy');
-    //   toast.show('transaction cancelled');
-    // }
   };
 
   const payNow = val => {
@@ -276,6 +255,7 @@ const Pay = props => {
       }
       else{
         setPaymentUrl(result.Data.PaymentURL);
+        paymentHandledRef.current = false;
         setPaymentModal(true);
         setLoading(false);
       }
