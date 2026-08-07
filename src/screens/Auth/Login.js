@@ -21,6 +21,7 @@ import {DarkButton, ThemeButton} from '../../components/Buttons';
 import {Input} from '../../components/Input/input';
 import {useToast} from 'react-native-toast-notifications';
 import {UserContext} from '../../../context/UserContext';
+import {trackEvent} from '../../utils/analytics';
 
 const width = Dimensions.get('window').width;
 const height = Dimensions.get('window').height;
@@ -37,6 +38,7 @@ const Login = () => {
   const toast = useToast();
 
 
+
   const submit = async () => {
     if (loading === false) {
       if (email !== '' && password !== '') {
@@ -50,6 +52,15 @@ const Login = () => {
           setAuth(true);
           toast.show('Welcome to velo');
           setLoading(false);
+
+          // Analytics is fire-and-forget; trackEvent never throws.
+          trackEvent('LOGIN', {
+            email: String(email),
+            method: 'email',
+          });
+
+
+          
         } else {
           if(result.status === 'notVerified'){
             const otpResult = await instance.resendOtp(email);

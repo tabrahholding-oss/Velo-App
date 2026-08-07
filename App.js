@@ -20,9 +20,14 @@ import {PermissionsAndroid} from 'react-native';
 import {ErrorBoundary} from './src/ErrorBoundary';
 import { notificationListener, requestUserPermission } from './src/utils/fcm';
 
+
+
+
+
 const App = () => {
   console.log('AAAApppppppp')
   const [loading, setLoading] = useState(true);
+
 
   useEffect(() => {
     setTimeout(() => {
