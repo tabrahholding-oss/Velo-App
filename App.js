@@ -19,6 +19,8 @@ import {PermissionsAndroid} from 'react-native';
 
 import {ErrorBoundary} from './src/ErrorBoundary';
 import { notificationListener, requestUserPermission } from './src/utils/fcm';
+import {startKochava} from './src/utils/kochava';
+import {AppState} from 'react-native';
 
 const App = () => {
   console.log('AAAApppppppp')
@@ -39,9 +41,41 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    registerAppWithFCM();
-    requestUserPermission();
-    notificationListener();
+    let cancelled = false;
+
+    // iOS only shows the App Tracking Transparency prompt while the app is in
+    // the active state, and drops it if another privacy prompt is already
+    // pending. Kochava requests ATT on start(), so start it only once the app
+    // is active AND the notification prompt has been answered -- otherwise the
+    // ATT prompt never appears and the IDFA is never collected.
+    const startTracking = async () => {
+      try {
+        await registerAppWithFCM();
+        await requestUserPermission();
+      } catch (e) {
+        // A push-permission failure must not stop attribution from starting.
+        console.log('push setup failed', e);
+      }
+      notificationListener();
+      if (cancelled) {
+        return;
+      }
+      if (AppState.currentState === 'active') {
+        startKochava();
+      } else {
+        const sub = AppState.addEventListener('change', state => {
+          if (state === 'active') {
+            sub.remove();
+            startKochava();
+          }
+        });
+      }
+    };
+
+    startTracking();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const registerAppWithFCM = async () => {

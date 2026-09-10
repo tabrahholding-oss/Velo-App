@@ -20,7 +20,7 @@ const TopBar = () => {
         <TouchableOpacity onPress={() => navigation.openDrawer()}>
           <Image source={assets.bell} style={styles.bar} />
         </TouchableOpacity>
-        <TouchableOpacity>
+        <TouchableOpacity style={{flex: 1, alignItems: 'center'}} >
           <Image source={assets.logo} style={styles.logo} />
         </TouchableOpacity>
         <TouchableOpacity>

@@ -25,7 +25,7 @@ const StoreStack = ({navigation}) => {
   }
 
   return (
-    <Stack.Navigator>
+    <Stack.Navigator screenOptions={{headerTitleAlign: 'center'}}>
     
       <Stack.Screen
         name="Store"

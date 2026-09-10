@@ -48,52 +48,29 @@ const DoubleJoyStack = ({navigation}) => {
   }
 
   function LogoTitle() {
-    return (
-      <View
-        style={{
-          // width: width - 30,
-          width: Platform.OS === 'android' ? width - 30 : width - 138,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}>
-        <Image source={assets.logo} style={{width: 60, height: 24}} />
-      </View>
-    );
+    // Centering is handled by headerTitleAlign on the navigator.
+    return <Image source={assets.logo} style={{width: 60, height: 24}} />;
   }
 
   function DoubleJoyTitle() {
     return (
-      <View
-        style={{
-          width: Platform.OS === 'android' ? width - 105 : width - 138,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}>
-        <Text
-          style={{fontFamily: 'Gotham-Medium', color: '#161415', fontSize: 18}}>
-          run of the mill
-        </Text>
-      </View>
+      <Text
+        style={{fontFamily: 'Gotham-Medium', color: '#161415', fontSize: 18}}>
+        run of the mill
+      </Text>
     );
   }
   function MyOrderTitle() {
     return (
-      <View
-        style={{
-          width: Platform.OS === 'android' ? width - 105 : width - 138,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}>
-        <Text
-          style={{fontFamily: 'Gotham-Medium', color: '#161415', fontSize: 18}}>
-          MY ORDERS
-        </Text>
-      </View>
+      <Text
+        style={{fontFamily: 'Gotham-Medium', color: '#161415', fontSize: 18}}>
+        MY ORDERS
+      </Text>
     );
   }
 
   return (
-    <Stack.Navigator>
+    <Stack.Navigator screenOptions={{headerTitleAlign: 'center'}}>
       <Stack.Screen
         name="DoubleJoy"
         component={DoubleJoy}

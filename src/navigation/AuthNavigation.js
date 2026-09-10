@@ -16,16 +16,9 @@ import ChangePassword from '../screens/Auth/ChangePassword';
 const width = Dimensions.get('window').width;
 
 function LogoTitle() {
-  return (
-    <View
-      style={{
-        width: Platform.OS === 'android' ? width - 30 : width - 138,
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}>
-      <Image source={assets.logo} style={{width: 60, height: 24}} />
-    </View>
-  );
+  // Centering is handled by headerTitleAlign on the navigator, not by sizing
+  // this view to the screen width.
+  return <Image source={assets.logo} style={{width: 60, height: 24}} />;
 }
 
 function BackIcon() {
@@ -44,7 +37,7 @@ const AuthNavigationStack = ({navigation}) => {
   const Stack = createStackNavigator();
 
   return (
-    <Stack.Navigator>
+    <Stack.Navigator screenOptions={{headerTitleAlign: 'center'}}>
     
       <Stack.Screen
         name={'Welcome'}
