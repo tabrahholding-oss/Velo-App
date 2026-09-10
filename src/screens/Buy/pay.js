@@ -21,6 +21,7 @@ import {Modal} from 'react-native-paper';
 import {ProfileController} from '../../controllers/ProfileController';
 import {API_SUCCESS} from '../../config/ApiConfig';
 import {useNavigation} from '@react-navigation/native';
+import {trackPackageRedeemed, trackPurchase} from '../../utils/kochava';
 
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
@@ -66,6 +67,13 @@ const Pay = props => {
       if(status === 'Paid'){
         setLoading(true);
         setPaymentModal(false);
+        trackPurchase({
+          productId: item?.id,
+          name: item?.attributes?.name,
+          amount: item?.attributes?.amount,
+          contentType: 'package',
+          paymentMethod: 'gateway',
+        });
         setTimeout(() => {
           toast.show('Package purchased successfully');
           navigation.navigate('Home', {
@@ -159,6 +167,11 @@ const Pay = props => {
     console.log(result,'resultttt')
     if (result.IsSuccess === true) {
       if(type === 'Wallet'){
+        trackPackageRedeemed({
+          productId: item?.id,
+          name: item?.attributes?.name,
+          amount: item?.attributes?.amount,
+        });
         toast.show(result.Message);
         navigation.navigate('Home',{
           screen:'buy',

@@ -22,6 +22,7 @@ import {ProfileController} from '../../controllers/ProfileController';
 import {API_SUCCESS} from '../../config/ApiConfig';
 import {useNavigation} from '@react-navigation/native';
 import {WalletController} from '../../controllers/WalletController';
+import {trackPurchase} from '../../utils/kochava';
 
 const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
@@ -64,6 +65,12 @@ const WalletPay = props => {
       if (status === 'Paid') {
         setLoading(true);
         setPaymentModal(false);
+        trackPurchase({
+          name: 'Wallet Top Up',
+          amount: amount,
+          contentType: 'wallet_topup',
+          paymentMethod: 'gateway',
+        });
         setTimeout(() => {
           toast.show('Wallet recharged successfully');
           navigation.navigate('MyWallet');

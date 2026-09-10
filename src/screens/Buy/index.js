@@ -31,6 +31,7 @@ import PageLoader from '../../components/PageLoader';
 import {assets} from '../../config/AssetsConfig';
 import {useNavigation} from '@react-navigation/native';
 import analytics from '@react-native-firebase/analytics';
+import {trackPackageView} from '../../utils/kochava';
 
 const height = Dimensions.get('window').height;
 
@@ -107,6 +108,11 @@ const Buy = props => {
       item?.attributes?.name,
       item?.attributes?.amount,
     );
+    trackPackageView({
+      productId: item?.id,
+      name: item?.attributes?.name,
+      amount: item?.attributes?.amount,
+    });
     setSelectedItem(item);
     setCartModal(true);
   };

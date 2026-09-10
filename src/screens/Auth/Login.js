@@ -21,6 +21,7 @@ import {DarkButton, ThemeButton} from '../../components/Buttons';
 import {Input} from '../../components/Input/input';
 import {useToast} from 'react-native-toast-notifications';
 import {UserContext} from '../../../context/UserContext';
+import {setKochavaUser, trackLogin} from '../../utils/kochava';
 
 const width = Dimensions.get('window').width;
 const height = Dimensions.get('window').height;
@@ -48,6 +49,12 @@ const Login = () => {
           userCtx.setUser(result.user);
           setToken(result.access_token);
           setAuth(true);
+          setKochavaUser(result.user);
+          trackLogin({
+            userId: result.user?.id,
+            email: result.user?.email,
+            gender: result.user?.gender,
+          });
           toast.show('Welcome to velo');
           setLoading(false);
         } else {

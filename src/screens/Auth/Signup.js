@@ -25,6 +25,7 @@ import RadioForm, {
 } from 'react-native-simple-radio-button';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import NationalityDropdown from '../../components/NationalityDropdown'
+import {trackRegistrationComplete} from '../../utils/kochava';
 
 // import DateTimePicker from '@react-native-community/datetimepicker';
 import moment from 'moment';
@@ -104,6 +105,11 @@ const validate = validateDetail();
       const result = await instance.signUpUser(data);
       setLoading(false);
       if (result?.status) {
+        trackRegistrationComplete({
+          userId: result.user?.id,
+          email: email,
+          gender: gender,
+        });
         // userCtx.setUser(result.user);
         // setToken(result.access_token);
         // setAuth(true);

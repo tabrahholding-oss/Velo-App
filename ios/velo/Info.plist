@@ -35,6 +35,8 @@
 	<string></string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Velo would like to access your Phone Library to chose pictures</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>Velo uses your data to measure the performance of our advertising and to give you a more relevant experience.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UIAppFonts</key>

@@ -34,6 +34,7 @@
     "react-native-country-codes-picker": "^2.3.5",
     "react-native-gesture-handler": "^2.28.0",
     "react-native-image-picker": "^8.2.1",
+    "react-native-kochava-tracker": "^2.8.2",
     "react-native-linear-gradient": "^2.8.3",
     "react-native-material-ripple": "^0.9.1",
     "react-native-material-textfield": "^0.16.1",
