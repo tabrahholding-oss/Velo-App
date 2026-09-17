@@ -99,6 +99,9 @@ const sendStandardEvent = (eventType, values = {}) => {
         event.setCustomBoolValue(key, value);
       } else if (typeof value === 'number') {
         event.setCustomNumberValue(key, value);
+      } else if (typeof value === 'object') {
+        // Would stringify to "[object Object]" and may carry personal data.
+        console.log('Kochava: dropped non-primitive value for', key);
       } else {
         event.setCustomStringValue(key, String(value));
       }
@@ -113,8 +116,21 @@ const sendStandardEvent = (eventType, values = {}) => {
 /** Send a custom (non-standard) event by name. */
 const sendCustomEvent = (name, values = {}) => {
   try {
-    KochavaTracker.instance.sendEventWithDictionary(name, values);
-    console.log('Kochava: sent custom event', name, values);
+    // Guard against accidentally shipping a whole API object (and any personal
+    // data inside it) to Kochava: keep primitives, drop everything else.
+    const safe = {};
+    Object.entries(values).forEach(([key, value]) => {
+      if (value == null || value === '') {
+        return;
+      }
+      if (typeof value === 'object') {
+        console.log('Kochava: dropped non-primitive value for', key);
+        return;
+      }
+      safe[key] = value;
+    });
+    KochavaTracker.instance.sendEventWithDictionary(name, safe);
+    console.log('Kochava: sent custom event', name, safe);
   } catch (e) {
     console.log('Kochava: failed to send custom event', name, e);
   }
@@ -220,4 +236,70 @@ export const trackPackageView = ({productId, name, amount} = {}) => {
     price: typeof amount === 'number' ? amount : Number(amount) || undefined,
     currency: 'QAR',
   });
+};
+
+/**
+ * Class events.
+ *
+ * Bookings always consume a package the user already owns (the API is always
+ * called with type 'Package'), so no new money changes hands here -- these are
+ * custom engagement events, never Purchase.
+ */
+const classEventValues = (item, extra = {}) => ({
+  content_id: item?.id != null ? String(item.id) : undefined,
+  name: item?.title,
+  theme: item?.theme_name,
+  // trainer is a full staff record from the API. Send only a display name and
+  // id -- never the whole object, which carries the trainer's dob and gender.
+  trainer: [item?.trainer?.first_name, item?.trainer?.last_name]
+    .filter(Boolean)
+    .join(' ')
+    .trim(),
+  trainer_id:
+    item?.trainer?.id != null ? String(item.trainer.id) : undefined,
+  location: item?.location?.spot_name,
+  start_date: item?.start_date,
+  start_time: item?.start_time,
+  indoor: item?.indoor != null ? item.indoor === 1 : undefined,
+  ...extra,
+});
+
+/**
+ * Fired when a user opens a class detail screen.
+ *
+ * Sent as the Kochava STANDARD "View" event rather than a custom name: custom
+ * events are being received but held Disabled in Event Manager, so their data
+ * never reaches reporting. content_type distinguishes this from other views.
+ */
+export const trackClassView = item => {
+  sendStandardEvent(
+    KochavaTrackerEventType.View,
+    classEventValues(item, {content_type: 'class'}),
+  );
+};
+
+/** Fired on a successful class booking. */
+export const trackClassBooked = (item, {seat} = {}) => {
+  sendCustomEvent(
+    'Class Booked',
+    classEventValues(item, {seat: seat != null ? String(seat) : undefined}),
+  );
+};
+
+/** Fired when a user joins the waiting list for a full class. */
+export const trackClassWaitlistJoined = item => {
+  sendCustomEvent('Class Waitlist Joined', classEventValues(item));
+};
+
+/**
+ * Fired when a booking is cancelled. `item` may be undefined when cancelling
+ * from the planner, where only the booking id is in scope.
+ */
+export const trackClassCancelled = (item, {bookingId} = {}) => {
+  sendCustomEvent(
+    'Class Cancelled',
+    classEventValues(item, {
+      booking_id: bookingId != null ? String(bookingId) : undefined,
+    }),
+  );
 };

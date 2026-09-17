@@ -1,4 +1,4 @@
-import React, {useContext, useEffect} from 'react';
+import React, {useContext, useEffect, useRef} from 'react';
 import {
   Alert,
   Dimensions,
@@ -23,6 +23,12 @@ import {useToast} from 'react-native-toast-notifications';
 import {UserContext} from '../../../context/UserContext';
 import {ModalView} from '../../components/ModalView';
 import {ClassContoller} from '../../controllers/ClassController';
+import {
+  trackClassBooked,
+  trackClassView,
+  trackClassCancelled,
+  trackClassWaitlistJoined,
+} from '../../utils/kochava';
 import {BuyContoller} from '../../controllers/BuyController';
 import {ProfileController} from '../../controllers/ProfileController';
 import moment from 'moment';
@@ -42,6 +48,8 @@ const ClassDetail = props => {
   const navigation = useNavigation();
   const [payModal, setPayModal] = useState(false);
   const [item, setItem] = useState();
+  // Last class id reported as a view, so re-focus does not duplicate the event.
+  const viewedClassId = useRef(null);
   const [userPackages, setUserPackages] = useState();
   const [forceReload, setForseReload] = useState(false);
   const [cancelModal, setCancelModal] = useState(false);
@@ -169,6 +177,12 @@ const ClassDetail = props => {
     }
     console.log(result.class);
     setItem(result.class);
+    // getDetail re-runs on every screen focus and refresh, so only report a
+    // view the first time this particular class is opened.
+    if (result.class?.id != null && viewedClassId.current !== result.class.id) {
+      viewedClassId.current = result.class.id;
+      trackClassView(result.class);
+    }
     setLoading(false);
   };
 
@@ -261,6 +275,7 @@ const ClassDetail = props => {
     const result = await instance.BookClass(data, token);
     console.log(result, 'res');
     if (result.status === 'success') {
+      trackClassBooked(item, {seat: data?.seat});
       toast.show(result.msg);
       setPayModal(false);
       setLoading(false);
@@ -326,6 +341,7 @@ const ClassDetail = props => {
     const instance = new ClassContoller();
     const result = await instance.CancelClass(data, token);
     if (result.status === 'success') {
+      trackClassCancelled(item, {bookingId: booking_id});
       toast.show(result.msg);
       setLoading(false);
       setCancelModal(false);
@@ -351,6 +367,7 @@ const ClassDetail = props => {
     const instance = new ClassContoller();
     const result = await instance.joinWaitingClass(data, token);
     if (result.status === 'success') {
+      trackClassWaitlistJoined(item);
       toast.show(result.msg);
       setPayModal(false);
       setLoading(false);

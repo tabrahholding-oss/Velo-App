@@ -20,6 +20,7 @@ import {UserContext} from '../../../context/UserContext';
 import {SkeltonCard} from '../../components/Skelton';
 import {useToast} from 'react-native-toast-notifications';
 import {ClassContoller} from '../../controllers/ClassController';
+import {trackClassCancelled} from '../../utils/kochava';
 import {ModalView} from '../../components/ModalView';
 import {Heading, Heading2} from '../../components/Typography';
 import PageLoader from '../../components/PageLoader';
@@ -146,6 +147,8 @@ const Planner = () => {
     const instance = new ClassContoller();
     const result = await instance.CancelClass(dt, token);
     if (result.status === 'success') {
+      // Only the booking id is in scope here -- the class object is not.
+      trackClassCancelled(undefined, {bookingId: cancelId});
       toast.show(result.msg);
       setLoading2(false);
       setCancelModal(false);
