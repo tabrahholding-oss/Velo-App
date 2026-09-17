@@ -7,7 +7,8 @@ require Pod::Executable.execute_command('node', ['-p',
 
 use_frameworks! :linkage => :static
 
-platform :ios, min_ios_version_supported
+# Kochava Measurement v5 requires iOS 15.5 (RN default is 15.1).
+platform :ios, '15.5'
 prepare_react_native_project!
 
 

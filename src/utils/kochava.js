@@ -1,9 +1,9 @@
 import {Platform} from 'react-native';
 import {
-  KochavaTracker,
-  KochavaTrackerEventType,
-  KochavaTrackerLogLevel,
-} from 'react-native-kochava-tracker';
+  KochavaMeasurement,
+  KochavaMeasurementEventType,
+  KochavaMeasurementLogLevel,
+} from 'react-native-kochava-measurement';
 import {
   KOCHAVA_ANDROID_APP_GUID,
   KOCHAVA_IOS_APP_GUID,
@@ -21,43 +21,43 @@ export const startKochava = () => {
     return;
   }
   try {
-    KochavaTracker.instance.setLogLevel(
+    KochavaMeasurement.instance.setLogLevel(
       KOCHAVA_LOG_LEVEL === 'debug'
-        ? KochavaTrackerLogLevel.Debug
-        : KochavaTrackerLogLevel.Info,
+        ? KochavaMeasurementLogLevel.Debug
+        : KochavaMeasurementLogLevel.Info,
     );
 
     // Only register a platform GUID once it has been filled in -- starting the
     // SDK with a placeholder would send payloads to a non-existent app.
     if (!KOCHAVA_ANDROID_APP_GUID.startsWith('REPLACE_WITH')) {
-      KochavaTracker.instance.registerAndroidAppGuid(KOCHAVA_ANDROID_APP_GUID);
+      KochavaMeasurement.instance.registerAndroidAppGuid(KOCHAVA_ANDROID_APP_GUID);
     }
     if (!KOCHAVA_IOS_APP_GUID.startsWith('REPLACE_WITH')) {
-      KochavaTracker.instance.registerIosAppGuid(KOCHAVA_IOS_APP_GUID);
+      KochavaMeasurement.instance.registerAppleAppGuid(KOCHAVA_IOS_APP_GUID);
     }
 
     if (Platform.OS === 'ios') {
       // Collect the IDFA once the user grants App Tracking Transparency.
       // The SDK auto-requests ATT on start and holds the install until the
       // prompt is answered, so NSUserTrackingUsageDescription must be present.
-      KochavaTracker.instance.enableIosAtt();
-      KochavaTracker.instance.setIosAttAuthorizationWaitTime(30);
+      KochavaMeasurement.instance.enableAppleAtt();
+      KochavaMeasurement.instance.setAppleAttAuthorizationWaitTime(30);
     }
 
-    KochavaTracker.instance.start();
+    KochavaMeasurement.instance.start();
     started = true;
     console.log('Kochava: started');
 
     if (__DEV__) {
       // The KDID identifies this install in the Kochava dashboard -- paste it
       // into the device lookup tool to see this device's traffic.
-      KochavaTracker.instance
-        .getDeviceId()
+      KochavaMeasurement.instance
+        .retrieveInstallId()
         .then(deviceId => console.log('Kochava: KDID =', deviceId))
         .catch(e => console.log('Kochava: could not read KDID', e));
 
       // Confirms the SDK is running.
-      KochavaTracker.instance
+      KochavaMeasurement.instance
         .getStarted()
         .then(v => console.log('Kochava: started flag =', v))
         .catch(e => console.log('Kochava: getStarted failed', e));
@@ -74,10 +74,10 @@ export const startKochava = () => {
 export const setKochavaUser = user => {
   try {
     if (user?.id != null) {
-      KochavaTracker.instance.registerIdentityLink('user_id', String(user.id));
+      KochavaMeasurement.instance.registerIdentityLink('user_id', String(user.id));
     }
     if (user?.email) {
-      KochavaTracker.instance.registerIdentityLink('email', String(user.email));
+      KochavaMeasurement.instance.registerIdentityLink('email', String(user.email));
     }
   } catch (e) {
     console.log('Kochava: failed to register identity link', e);
@@ -90,7 +90,7 @@ export const setKochavaUser = user => {
  */
 const sendStandardEvent = (eventType, values = {}) => {
   try {
-    const event = KochavaTracker.instance.buildEventWithEventType(eventType);
+    const event = KochavaMeasurement.instance.buildEventWithEventType(eventType);
     Object.entries(values).forEach(([key, value]) => {
       if (value == null || value === '') {
         return;
@@ -129,7 +129,7 @@ const sendCustomEvent = (name, values = {}) => {
       }
       safe[key] = value;
     });
-    KochavaTracker.instance.sendEventWithDictionary(name, safe);
+    KochavaMeasurement.instance.sendEventWithDictionary(name, safe);
     console.log('Kochava: sent custom event', name, safe);
   } catch (e) {
     console.log('Kochava: failed to send custom event', name, e);
@@ -142,7 +142,7 @@ const sendCustomEvent = (name, values = {}) => {
 
 /** Fired when a new account is created. */
 export const trackRegistrationComplete = ({userId, email, gender} = {}) => {
-  sendStandardEvent(KochavaTrackerEventType.RegistrationComplete, {
+  sendStandardEvent(KochavaMeasurementEventType.RegistrationComplete, {
     registration_method: 'email',
     user_id: userId,
     email,
@@ -161,26 +161,29 @@ export const trackLogin = ({userId, email, gender} = {}) => {
 };
 
 /**
- * Register the FCM/APNs token with Kochava. This is what powers uninstall
- * measurement -- Kochava sends silent pushes to the token and infers an
- * uninstall when delivery stops. There is no "uninstall" event to send.
+ * NO-OP since the v5 SDK (react-native-kochava-measurement).
+ *
+ * Push Engagement was removed in v4.0.0 -- registerPushToken/setPushEnabled no
+ * longer exist, so the SDK cannot feed device tokens to Kochava for uninstall
+ * measurement. Uninstall tracking now requires sending push tokens to Kochava
+ * server-to-server from the backend instead.
+ *
+ * Kept as a no-op so the fcm.js call site stays intact and the gap is visible
+ * rather than silently dropped.
  */
 export const registerKochavaPushToken = token => {
-  try {
-    if (!token) {
-      return;
-    }
-    KochavaTracker.instance.setPushEnabled(true);
-    KochavaTracker.instance.registerPushToken(String(token));
-    console.log('Kochava: registered push token');
-  } catch (e) {
-    console.log('Kochava: failed to register push token', e);
+  if (!token) {
+    return;
   }
+  console.log(
+    'Kochava: push token not registered -- SDK v5 removed push support; ' +
+      'uninstall measurement needs a server-side token feed',
+  );
 };
 
 /** Fired when the user opens the app from a push notification. */
 export const trackPushOpened = remoteMessage => {
-  sendStandardEvent(KochavaTrackerEventType.PushOpened, {
+  sendStandardEvent(KochavaMeasurementEventType.PushOpened, {
     name: remoteMessage?.notification?.title,
     description: remoteMessage?.notification?.body,
     campaign_id: remoteMessage?.data?.campaign_id,
@@ -203,7 +206,7 @@ export const trackPurchase = ({
   contentType,
   orderId,
 } = {}) => {
-  sendStandardEvent(KochavaTrackerEventType.Purchase, {
+  sendStandardEvent(KochavaMeasurementEventType.Purchase, {
     content_id: productId != null ? String(productId) : undefined,
     name,
     price: typeof amount === 'number' ? amount : Number(amount) || undefined,
@@ -273,7 +276,7 @@ const classEventValues = (item, extra = {}) => ({
  */
 export const trackClassView = item => {
   sendStandardEvent(
-    KochavaTrackerEventType.View,
+    KochavaMeasurementEventType.View,
     classEventValues(item, {content_type: 'class'}),
   );
 };
