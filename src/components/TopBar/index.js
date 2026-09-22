@@ -17,15 +17,19 @@ const TopBar = () => {
     <>
     {/* <DrawerNavigation /> */}
       <View style={styles.box}>
-        <TouchableOpacity onPress={() => navigation.openDrawer()}>
-          <Image source={assets.bell} style={styles.bar} />
-        </TouchableOpacity>
+        <View style={styles.side}>
+          <TouchableOpacity onPress={() => navigation.openDrawer()}>
+            <Image source={assets.bell} style={styles.bar} />
+          </TouchableOpacity>
+        </View>
         <TouchableOpacity>
           <Image source={assets.logo} style={styles.logo} />
         </TouchableOpacity>
-        <TouchableOpacity>
-          <Image source={assets.bell} style={styles.bell} />
-        </TouchableOpacity>
+        <View style={[styles.side, styles.sideRight]}>
+          <TouchableOpacity>
+            <Image source={assets.bell} style={styles.bell} />
+          </TouchableOpacity>
+        </View>
       </View>
     </>
   );
@@ -40,9 +44,18 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     paddingBottom: 10,
     justifyContent: 'space-between',
+    alignItems: 'center',
     flexDirection: 'row',
     backgroundColor: '#fff',
     borderColor: '#ddd',
+  },
+  side: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  sideRight: {
+    justifyContent: 'flex-end',
   },
   logo: {
     width: 60,

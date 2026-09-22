@@ -2,13 +2,7 @@ import React from 'react';
 import Profile from '../screens/Profile';
 import ProfileEdit from '../screens/Profile/ProfileEdit';
 import {useNavigation} from '@react-navigation/native';
-import {
-  TouchableOpacity,
-  Image,
-  Dimensions,
-  View,
-  Platform,
-} from 'react-native';
+import {TouchableOpacity, Image} from 'react-native';
 import {assets} from '../config/AssetsConfig';
 import ChangePassword from '../screens/Profile/ChangePassword';
 import MyWallet from '../screens/Profile/MyWallet';
@@ -16,7 +10,6 @@ import Journey from '../screens/Journey';
 import Buy from '../screens/Buy';
 import WalletPay from '../screens/Profile/WalletPay';
 const {createStackNavigator} = require('@react-navigation/stack');
-const width = Dimensions.get('window').width;
 
 const ProfileNavigation = ({navigation}) => {
   const Stack = createStackNavigator();
@@ -44,20 +37,10 @@ const ProfileNavigation = ({navigation}) => {
     );
   }
   function LogoTitle() {
-    return (
-      <View
-        style={{
-          // width:width - 105,
-          width: Platform.OS === 'android' ? width - 105 : width - 138,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}>
-        <Image source={assets.logo} style={{width: 60, height: 24}} />
-      </View>
-    );
+    return <Image source={assets.logo} style={{width: 60, height: 24}} />;
   }
   return (
-    <Stack.Navigator>
+    <Stack.Navigator screenOptions={{headerTitleAlign: 'center'}}>
       <Stack.Screen
         name={'Profile'}
         component={Profile}

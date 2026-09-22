@@ -94,16 +94,7 @@ function CustomDrawerContent(props) {
 }
 
 function LogoTitle() {
-  return (
-    <View
-      style={{
-        width: Platform.OS === 'android' ? width - 105 : width - 155,
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}>
-      <Image source={assets.logo} style={{width: 60, height: 24}} />
-    </View>
-  );
+  return <Image source={assets.logo} style={{width: 60, height: 24}} />;
 }
 
 function NotificationIcon({count, setCount}) {
@@ -176,6 +167,7 @@ export default function DrawerNavigation() {
   return (
     <Drawer.Navigator
       screenOptions={{
+        headerTitleAlign: 'center',
         headerLeft: () => <HambergerIcon />,
         headerRight: () => <NotificationIcon count={count} setCount={setCount} />,
         headerStyle: {

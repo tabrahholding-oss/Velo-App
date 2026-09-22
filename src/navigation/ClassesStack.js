@@ -26,7 +26,7 @@ const ClassesStack = ({navigation}) => {
   }
 
   return (
-    <Stack.Navigator>
+    <Stack.Navigator screenOptions={{headerTitleAlign: 'center'}}>
 
     {/* <Stack.Screen
         name="Classes"

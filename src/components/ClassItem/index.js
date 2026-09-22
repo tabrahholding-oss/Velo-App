@@ -89,7 +89,7 @@ export const ClassItem = props => {
             }
             style={styles.mainImage}
           />
-          {item.indoor === 0 && <Text style={styles.outdoor}>Outdoor</Text>}
+          {/* {item.indoor === 0 && <Text style={styles.outdoor}>Outdoor</Text>} */}
         </View>
 
         <View
