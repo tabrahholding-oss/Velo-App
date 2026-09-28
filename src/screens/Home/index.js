@@ -82,7 +82,7 @@ const Home = () => {
         .getValue('force_update_version')
         .asString();
 
-      const currentAppVersion = 5.04; // Replace with your app's current version
+      const currentAppVersion = 5.05; // Replace with your app's current version
       console.log(forceUpdateVersion, 'fupdate');
       if (forceUpdateVersion > currentAppVersion) {
         setUpdateModal(true);

@@ -82,8 +82,8 @@ android {
         applicationId "com.velo.bassem"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 46
-        versionName "2.21"
+        versionCode 48
+        versionName "2.23"
     }
     signingConfigs {
         debug {
